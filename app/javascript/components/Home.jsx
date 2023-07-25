@@ -1,86 +1,128 @@
-import React, { Fragment } from 'react'
-import { Disclosure, Menu, Transition } from '@headlessui/react'
-import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import React, { Fragment, JSX } from 'react'
 import axios from 'axios';
+import { Navigate } from "react-router-dom";
+import { baseUrl } from '../consts';
+import { Layout } from './Layout';
+import { UsersIcon, BarsArrowUpIcon, ExclamationCircleIcon } from '@heroicons/react/20/solid'
 
-const baseUrl = 'http://localhost:3000';
-
-const handleSubmitPartySize = async (e, partySize) => {
-    e.preventDefault();
-    try {
-        const response = await axios.post(`${baseUrl}/parties`, {
-            party: {
-                size: partySize
-            }
-        });
-    } catch (error) { 
-        setError(error);
-    }
-};
-
-export default function Example() {
-    const [partySize, setPartySize] = React.useState(0);
+export default function HomePage() {
+    const [partySize, setPartySize] = React.useState(1);
     const [error, setError] = React.useState(null);
+    const [toShow, setToShow] = React.useState(null);
+
+    const isPartySizeValid = (partySize) => {
+      if (partySize < 1) {
+        setError("Party size must be greater than 0");
+        return true;
+      } else {
+        setError(null);
+        return false;
+      }
+    };
+
+    const handleSubmitPartySize = async (e, partySize) => {
+        e.preventDefault();
+
+        // guard clause on party size
+        if (isPartySizeValid(partySize)) {
+            return;
+        }
+
+        try {
+            const response = await axios.post(`${baseUrl}/parties`, {
+                party: {
+                    size: partySize
+                }
+            });
+            setToShow(response.data.id);
+        } catch (error) { 
+            setError(error);
+        }
+    };
+
+    if (toShow) {
+        return <Navigate to={`/parties/${toShow}`} />;
+    }
+
+    const renderInput = (hasError) => {
+      if (hasError) {
+        return (
+        <>
+            <div className="mt-2 flex rounded-md shadow-sm">
+            <div className="relative flex flex-grow items-stretch focus-within:z-10">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <ExclamationCircleIcon className="h-5 w-5 text-red-500" aria-hidden="true" />
+              </div>
+              <input
+                type="number"
+                name="party-size"
+                id="party-size"
+                className="block w-full rounded-md rounded-l-md border-0 py-1.5 pl-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-400 focus:ring-2 focus:ring-inset focus:ring-red-600 sm:text-sm sm:leading-6"
+                placeholder="1"
+                value={partySize}
+                onChange={(e) => setPartySize(e.target.value)}
+              />
+            </div>
+            <button
+              type="button"
+              className="relative -ml-px inline-flex items-center gap-x-1.5 rounded-r-md px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+              onClick={(e) => handleSubmitPartySize(e, partySize)}
+            >
+              <BarsArrowUpIcon className="-ml-0.5 h-5 w-5 text-gray-400" aria-hidden="true" />
+              Seat Party
+            </button>
+          </div>
+        <p className="mt-2 text-sm text-red-600" id="email-error">
+          Party size must be greater than 0
+        </p>
+        </>
+        );
+      }
+
+      return (
+        <>
+          <div className="mt-2 flex rounded-md shadow-sm">
+            <div className="relative flex flex-grow items-stretch focus-within:z-10">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <UsersIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+              </div>
+              <input
+                type="number"
+                name="party-size"
+                id="party-size"
+                className="block w-full rounded-md rounded-l-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                placeholder="1"
+                value={partySize}
+                onChange={(e) => setPartySize(e.target.value)}
+              />
+            </div>
+            <button
+              type="button"
+              className="relative -ml-px inline-flex items-center gap-x-1.5 rounded-r-md px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+              onClick={(e) => handleSubmitPartySize(e, partySize)}
+            >
+              <BarsArrowUpIcon className="-ml-0.5 h-5 w-5 text-gray-400" aria-hidden="true" />
+              Seat Party
+            </button>
+          </div>
+        </>
+      );
+    };
+
   return (
     <>
-      {/*
-        This example requires updating your template:
 
-        ```
-        <html class="h-full bg-gray-100">
-        <body class="h-full">
-        ```
-      */}
-      <div className="min-h-full">
-        <div className="bg-gray-800 pb-32">
-          <header className="py-10">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-              <h1 className="text-3xl font-bold tracking-tight text-white">Syd's Resturaunt</h1>
-            </div>
-          </header>
-        </div>
+    <Layout >
+      <h1 className="text-3xl font-bold text-center text-gray-900">Syd's Resturaunt</h1>
+    <div>
+      <label htmlFor="party-size" className="block text-sm font-medium leading-6 text-gray-900">
+        Enter the size of the party
+      </label>
+      {renderInput(error)}
+    </div>
 
-        <main className="-mt-32">
-          <div className="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
-            <form>
-                <div className="space-y-12">
-                <div className="border-b border-white/10 pb-12">
-                <h2 className="text-base font-semibold leading-7 text-white">Party Information</h2>
+    </Layout>
 
-                <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
-                <div className="sm:col-span-3">
-                    <label htmlFor="first-name" className="block text-sm font-medium leading-6 text-white">
-                    Enter Party Size
-                    </label>
-                    <div className="mt-2">
-                    <input
-                        onChange={(e) => setPartySize(e.target.value)}
-                        value={partySize}
-                        type="number"
-                        name="party-size"
-                        id="party-size"
-                        min={1}
-                        max={100}
-                        className="block w-full rounded-md border-0 bg-white/5 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
-                    />
-                    </div>
-                </div>
-                </div>
-                </div>
-                </div>
-                <div className="mt-6 flex items-center justify-end gap-x-6">
-                <button
-                onClick={(e) => handleSubmitPartySize(e, partySize)}
-                type="submit"
-                className="rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
-                >
-                Save
-                </button>
-      </div>
-            </form>
-          </div>
-        </main>
-      </div>
     </>
   )
 }

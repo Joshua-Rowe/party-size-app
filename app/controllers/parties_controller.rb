@@ -1,10 +1,12 @@
 class PartiesController < ApplicationController
-  before_action :set_party, only: %i[ show update destroy ]
+  before_action :set_party, only: %i[ show ]
   skip_before_action :verify_authenticity_token
 
   # GET /parties/1
   # GET /parties/1.json
   def show
+    number_of_same_size_parties = Party.where(size: @party.size).count
+    render json: @party.as_json.merge({number_of_same_size_parties: number_of_same_size_parties})
   end
 
   # POST /parties
